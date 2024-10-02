@@ -27,6 +27,13 @@ public:
 		}
 		if (a.size() == 0) a = { 0 };
 	}
+	bigint(const std::string& s, int base) {
+		a.clear();
+		for (int i = 0; digit * i < s.size(); ++i) {
+			a.push_back(std::stoi(s.substr(std::max(int(s.size()) - i * digit - digit, 0), digit - std::max(digit + i * digit - int(s.size()), 0)), nullptr, base));
+		}
+		if (a.size() == 0) a = { 0 };
+	}
 	std::string to_string() const {
 		std::string ret;
 		bool flag = false;

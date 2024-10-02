@@ -203,7 +203,7 @@ int main(int argc, char **argv)
                 {
                     break;
                 }
-                char o = static_cast<char>(c);
+                char o = static_cast<char>(c.to_long());
                 out.write(&o, 1);
             }
         }
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
         }
     }
 
-    while (false)
+    //while (false)
     {
         std::string message = "this is rsa cypher";
         Safe::Encryption::RSA Alice{};
@@ -283,23 +283,23 @@ int main(int argc, char **argv)
         std::cout << decoded << std::endl;
     }
 
-    while (false)
+    //while (false)
     {
         Safe::Encryption::RSA Alice{};
         Safe::Encryption::RSA Bob{};
         {
-            std::ifstream in("rsa/rsa.in", std::ios_base::binary);
-            std::ofstream encoded("rsa/rsa.encoded", std::ios_base::binary | std::ios_base::trunc);
+            std::ifstream in("lab2/rsa/rsa.in", std::ios_base::binary);
+            std::ofstream encoded("lab2/rsa/rsa.encoded", std::ios_base::binary | std::ios_base::trunc);
             Alice.encode(in, encoded, Bob.get_open_key());
         }
         {
-            std::ifstream encoded("rsa/rsa.encoded", std::ios_base::binary);
-            std::ofstream out("rsa/rsa.out", std::ios_base::binary | std::ios_base::trunc);
+            std::ifstream encoded("lab2/rsa/rsa.encoded", std::ios_base::binary);
+            std::ofstream out("lab2/rsa/rsa.out", std::ios_base::binary | std::ios_base::trunc);
             Bob.decode(encoded, out);
         }
     }
 
-    //while (false)
+    while (false)
     {
         Safe::long_num p = Safe::Math::get_prime(10e9);
         std::cout << "P = " << p << std::endl;
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
         }
     }
 
-    //while (false)
+    while (false)
     {
         Safe::Signature::RSA Alice;
         Safe::Signature::RSA Bob;
@@ -351,6 +351,7 @@ int main(int argc, char **argv)
         }
     }
 
+    while (false)
     {
         Safe::Signature::GOST ghost;
         std::cout << "ghost created\n";

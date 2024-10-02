@@ -6,10 +6,12 @@
 #include <array>
 #include <string>
 #include <future>
+#include <iostream>
+#include <BigInt.hpp>
 
 namespace Safe
 {
-    using long_num = long long;
+    using long_num = BigInt;
     namespace Math
     {
         template <class T>
@@ -17,44 +19,52 @@ namespace Safe
         {
             return a % b;
         }
-        long_num get_digit(long_num number, long_num n)
-        {
-            return (number >> n) & 1;
-        }
 
         long_num pow_mod(long_num a, long_num x, long_num p)
         {
-            long_num max_pow = 0;
-            while ((1l << ++max_pow) < x)
+            if (x == 0)
             {
+                return 1;
             }
-            long_num next_a = 1;
-            for (long_num i = max_pow - 1; i >= 0; --i)
+            if ((x % 2) == 0)
             {
-                // next_a = (next_a * next_a) % p;
-                next_a = mod(next_a * next_a, p);
-                long_num digit = get_digit(x, i);
-                if (digit == 1)
-                {
-                    // next_a = (next_a * a) % p;
-                    next_a = mod(next_a * a, p);
-                }
+                auto tmp = pow_mod(a, x >> 1, p);
+                return (tmp * tmp) % p;
             }
-            return mod(next_a, p);
+            return (a * pow_mod(a, x - 1, p)) % p;
         }
+
+        // long_num pow_mod(long_num a, long_num x, long_num p)
+        // {
+        //     long_num max_pow = 0;
+        //     while ((1l << (++max_pow).to_int()) < x);
+        //     long_num next_a = 1;
+        //     for (long_num i = max_pow - 1; i >= 0; --i)
+        //     {
+        //         // next_a = (next_a * next_a) % p;
+        //         next_a = mod(next_a * next_a, p);
+        //         long_num digit = get_digit(x, i);
+        //         if (digit == 1)
+        //         {
+        //             // next_a = (next_a * a) % p;
+        //             next_a = mod(next_a * a, p);
+        //         }
+        //     }
+        //     return mod(next_a, p);
+        // }
         std::vector<long_num> fast_log(long_num a, long_num p, long_num b)
         {
-            long_num m = std::ceil(std::pow(p, 0.5));
-            long_num k = std::ceil(std::pow(p, 0.5));
+            long_num m = sqrt(p);
+            long_num k = sqrt(p);
             std::vector<long_num> X;
             std::vector<std::pair<long_num, long_num>> A;
             std::vector<std::pair<long_num, long_num>> B;
-            A.reserve(k + 1);
+            A.reserve(k.to_long() + 1);
             for (long_num i = 1; i <= k; ++i)
             {
                 A.emplace_back(pow_mod(a, i * m, p), i);
             }
-            B.reserve(m + 1);
+            B.reserve(m.to_long() + 1);
             for (long long j = 0; j < m; ++j)
             {
                 B.emplace_back((b * pow_mod(a, j, p)) % p, j);
@@ -85,10 +95,38 @@ namespace Safe
             }
             return U;
         }
+        long_num ext_gcd(long_num a, long_num b, long_num &x, long_num &y)
+        {
+            if (b == 0)
+            {
+                x = 1;
+                y = 0;
+                return a;
+            }
+
+            long_num x1, y1;
+            long_num gcd = ext_gcd(b, a % b, x1, y1);
+
+            x = y1;
+            y = x1 - (a / b) * y1;
+
+            return gcd;
+        }
         long_num inverse(long_num a, long_num p)
         {
-            auto x = gcd(a, p)[1];
-            return x > 0 ? x : (x + p);
+            long_num x, y;
+            long_num gcd = ext_gcd(a, p, x, y);
+
+            if (gcd != 1)
+            {
+                // Modular inverse doesn't exist
+                return -1;
+            }
+            else
+            {
+                // Ensure the result is positive
+                return (x % p + p) % p;
+            }
         }
         long_num neg_mod(long_num a, long_num p)
         {
@@ -121,7 +159,7 @@ namespace Safe
             {
                 return false;
             }
-            T b = (T)std::pow(number, 0.5);
+            T b = (T)sqrt(number);
             for (T i = 2; i <= b; ++i)
             {
                 if ((number % i) == 0)
@@ -172,7 +210,7 @@ namespace Safe
             while (true)
             {
                 long_num a = get_prime(range);
-                if (gcd(a, p)[0] == 1)
+                if (::gcd(a, p) == 1)
                 {
                     return a;
                 }
@@ -187,7 +225,7 @@ namespace Safe
             long_num y = 0;
             for (long_num i = 0; i < a; ++i)
             {
-                if (gcd(a, i)[0] == 1)
+                if (Math::gcd(a, i)[0] == 1)
                 {
                     y += 1;
                 }
@@ -326,7 +364,7 @@ namespace Safe
                 std::string message;
                 for (auto l : vec)
                 {
-                    message.push_back(static_cast<char>(l));
+                    message.push_back(static_cast<char>(l.to_long_long()));
                 }
                 return message;
             }
@@ -457,7 +495,7 @@ namespace Safe
                 std::string message;
                 for (auto l : vec)
                 {
-                    message.push_back(static_cast<char>(l));
+                    message.push_back(static_cast<char>(l.to_long()));
                 }
                 return message;
             }
@@ -469,10 +507,10 @@ namespace Safe
             static std::vector<char> generate(long_num l)
             {
                 std::vector<char> key;
-                key.reserve(l);
+                key.reserve(l.to_long());
                 for (long_num i = 0; i < l; ++i)
                 {
-                    key.push_back(Math::get_num(0, 255));
+                    key.push_back(Math::get_num(0, 255).to_int());
                 }
                 return key;
             }
@@ -490,7 +528,7 @@ namespace Safe
                 encoded.reserve(message.length());
                 for (long_num i = 0; i < message.length(); ++i)
                 {
-                    encoded.push_back(message[i] ^ key[i]);
+                    encoded.push_back((message[i.to_long()] ^ key[i.to_long()]));
                 }
                 return encoded;
             }
@@ -516,7 +554,7 @@ namespace Safe
                 message.reserve(encoded.size());
                 for (long_num i = 0; i < encoded.size(); ++i)
                 {
-                    message.push_back(encoded[i] ^ key[i]);
+                    message.push_back(encoded[i.to_long()] ^ key[i.to_long()]);
                 }
                 return message;
             }
@@ -548,18 +586,24 @@ namespace Safe
         public:
             RSA()
             {
-                long_num p = Math::get_prime(10000);
-                // p = 3557;
-                long_num q = Math::get_prime(10000);
-                // q = 2579;
+                long_num p = Math::get_prime(100000000);
+                long_num q = Math::get_prime(100000000);
                 n = p * q;
                 long_num phi = (p - 1) * (q - 1);
                 e = Math::get_mutually_prime(phi, phi);
                 d = Math::inverse(e, phi);
+                if ((e * d) % phi != 1)
+                {
+                    std::cout << "ITS FUCKING ERRORR\n\n";
+                }
             }
             std::pair<long_num, long_num> get_open_key()
             {
                 return {e, n};
+            }
+            long_num get_close_key()
+            {
+                return d;
             }
             std::vector<long_num> encode(const std::string &message, std::pair<long_num, long_num> open_key)
             {
@@ -599,7 +643,7 @@ namespace Safe
                         return;
                     }
                     auto v = Math::pow_mod(c, d, n);
-                    char m = v;
+                    char m = v.to_int();
                     os.write(reinterpret_cast<char *>(&m), sizeof(m));
                 }
             }
@@ -609,7 +653,7 @@ namespace Safe
                 message.reserve(vec.size());
                 for (auto c : vec)
                 {
-                    message.push_back(static_cast<char>(Math::pow_mod(c, d, n)));
+                    message.push_back(static_cast<char>(Math::pow_mod(c, d, n).to_int()));
                 }
                 return message;
             }
